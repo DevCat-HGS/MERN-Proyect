@@ -1,6 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useContext } from 'react';
 import { useTasks } from "../context/tasksContext";
 import { TaskCard } from "../components/tasks/TaskCard";
+import StatsOverview from '../components/StatsOverview';
+import TaskFilters from '../components/TaskFilters';
 import { ImFileEmpty } from "react-icons/im";
 
 export function TasksPage() {
@@ -11,7 +13,17 @@ export function TasksPage() {
   }, []);
 
   return (
-    <>
+    <div className="py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">Task Dashboard</h1>
+        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          + New Task
+        </button>
+      </div>
+
+      <StatsOverview />
+      <TaskFilters />
+
       {tasks.length === 0 && (
         <div className="flex justify-center items-center p-10">
           <div>
@@ -23,11 +35,11 @@ export function TasksPage() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-2">
-        {tasks.map((task) => (
-          <TaskCard task={task} key={task._id} />
+      <div className="grid grid-cols-1 gap-4">
+        {tasks.map(task => (
+          <TaskCard key={task._id} task={task} />
         ))}
       </div>
-    </>
+    </div>
   );
 }

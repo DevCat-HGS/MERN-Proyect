@@ -7,7 +7,7 @@ import {
   updateTaskRequest,
 } from "../api/tasks";
 
-const TaskContext = createContext();
+export const TaskContext = createContext();
 
 export const useTasks = () => {
   const context = useContext(TaskContext);
@@ -19,8 +19,12 @@ export function TaskProvider({ children }) {
   const [tasks, setTasks] = useState([]);
 
   const getTasks = async () => {
-    const res = await getTasksRequest();
-    setTasks(res.data);
+    try {
+      const res = await getTasksRequest();
+      setTasks(res.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const deleteTask = async (id) => {
