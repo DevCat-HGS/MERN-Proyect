@@ -1,0 +1,12 @@
+{
+    "comments": [
+      {
+        "_id": {"$oid": "65cfabcdabcdabcdabcdabcd"},
+        "taskId": {"$oid": "65cf5678abcd5678abcd5678"},
+        "userId": {"$oid": "65cf1234abcd1234abcd1234"},
+        "content": "Started working on the first draft",
+        "createdAt": {"$date": "2024-02-16T00:00:00Z"},
+        "updatedAt": {"$date": "2024-02-16T00:00:00Z"}
+      }
+    ]
+  }
