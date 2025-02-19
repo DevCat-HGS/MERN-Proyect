@@ -7,11 +7,13 @@ import {
   updateTaskRequest,
 } from "../api/tasks";
 
-export const TaskContext = createContext();
+const TaskContext = createContext();
 
 export const useTasks = () => {
   const context = useContext(TaskContext);
-  if (!context) throw new Error("useTasks must be used within a TaskProvider");
+  if (!context) {
+    throw new Error("useTasks must be used within a TaskProvider");
+  }
   return context;
 };
 
@@ -39,9 +41,11 @@ export function TaskProvider({ children }) {
   const createTask = async (task) => {
     try {
       const res = await createTaskRequest(task);
-      console.log(res.data);
+      setTasks([...tasks, res.data]);
+      return res.data;
     } catch (error) {
-      console.log(error);
+      console.error("Error creating task:", error.response?.data || error);
+      throw error;
     }
   };
 
@@ -56,9 +60,16 @@ export function TaskProvider({ children }) {
 
   const updateTask = async (id, task) => {
     try {
-      await updateTaskRequest(id, task);
+      if (!id) throw new Error("Task ID is required");
+      
+      const res = await updateTaskRequest(id, task);
+      setTasks(tasks.map((task) => 
+        task._id === id ? res.data : task
+      ));
+      return res.data;
     } catch (error) {
-      console.error(error);
+      console.error("Error updating task:", error.response?.data || error);
+      throw error;
     }
   };
 

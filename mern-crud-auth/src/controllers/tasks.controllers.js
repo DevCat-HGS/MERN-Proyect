@@ -12,15 +12,25 @@ export const getTasks = async (req, res) => {
 export const createTask = async (req, res) => {
   try {
     const { title, description, date } = req.body;
+    
+    // Validación básica
+    if (!title || !description) {
+      return res.status(400).json({
+        message: ["Title and description are required"]
+      });
+    }
+
     const newTask = new Task({
       title,
       description,
       date,
       user: req.user.id,
     });
-    await newTask.save();
-    res.json(newTask);
+    
+    const savedTask = await newTask.save();
+    res.json(savedTask);
   } catch (error) {
+    console.error("Create task error:", error);
     return res.status(500).json({ message: error.message });
   }
 };
@@ -39,15 +49,41 @@ export const deleteTask = async (req, res) => {
 
 export const updateTask = async (req, res) => {
   try {
+    const { id } = req.params;
     const { title, description, date } = req.body;
+
+    // Validación del ID
+    if (!id) {
+      return res.status(400).json({ 
+        message: ["Task ID is required"] 
+      });
+    }
+
+    // Validación básica de campos
+    if (!title || !description) {
+      return res.status(400).json({
+        message: ["Title and description are required"]
+      });
+    }
+
     const taskUpdated = await Task.findOneAndUpdate(
-      { _id: req.params.id },
+      { _id: id, user: req.user.id },
       { title, description, date },
       { new: true }
     );
+
+    if (!taskUpdated) {
+      return res.status(404).json({ 
+        message: ["Task not found or you're not authorized"] 
+      });
+    }
+
     return res.json(taskUpdated);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("Update task error:", error);
+    return res.status(500).json({ 
+      message: ["Error updating task", error.message] 
+    });
   }
 };
 
