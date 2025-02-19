@@ -26,8 +26,11 @@ export function TaskCard({ task }) {
             {new Date(task.date).toLocaleDateString()}
           </div>
           <div className="flex gap-2">
-            <Link to={`/tasks/${task._id}`} 
-              className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-full transition-colors">
+            <Link 
+              to={`/tasks/${task._id}`} 
+              className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-full transition-colors"
+              onClick={() => console.log("Navigating to edit task:", task._id)}
+            >
               <FiEdit2 className="w-5 h-5" />
             </Link>
             <button
