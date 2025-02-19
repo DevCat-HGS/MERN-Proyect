@@ -5,6 +5,7 @@ import {
   getTasksRequest,
   getTaskRequest,
   updateTaskRequest,
+  toggleTaskStatusRequest,
 } from "../api/tasks";
 
 const TaskContext = createContext();
@@ -73,6 +74,19 @@ export function TaskProvider({ children }) {
     }
   };
 
+  const toggleTaskStatus = async (id) => {
+    try {
+      const res = await toggleTaskStatusRequest(id);
+      setTasks(tasks.map(task => 
+        task._id === id ? res.data : task
+      ));
+      return res.data;
+    } catch (error) {
+      console.error("Error toggling task status:", error.response?.data || error);
+      throw error;
+    }
+  };
+
   return (
     <TaskContext.Provider
       value={{
@@ -82,6 +96,7 @@ export function TaskProvider({ children }) {
         createTask,
         getTask,
         updateTask,
+        toggleTaskStatus,
       }}
     >
       {children}

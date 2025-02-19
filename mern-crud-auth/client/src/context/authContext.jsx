@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { loginRequest, registerRequest, verifyTokenRequest } from "../api/auth";
 import Cookies from "js-cookie";
 
@@ -19,9 +18,47 @@ export const AuthProvider = ({ children }) => {
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // verify token on component mount
+  // Verificar token al montar el componente
   useEffect(() => {
-    async function checkLogin() {
+    checkLogin();
+  }, []);
+
+  // Verificar token cuando la ventana recupera el foco
+  useEffect(() => {
+    window.addEventListener('focus', checkLogin);
+    
+    // Verificar inactividad
+    let inactivityTimeout;
+    const resetInactivityTimer = () => {
+      clearTimeout(inactivityTimeout);
+      inactivityTimeout = setTimeout(() => {
+        logout();
+      }, 30 * 60 * 1000); // 30 minutos de inactividad
+    };
+
+    window.addEventListener('mousemove', resetInactivityTimer);
+    window.addEventListener('keypress', resetInactivityTimer);
+
+    // Verificar visibilidad de la página
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        clearTimeout(inactivityTimeout);
+      } else {
+        checkLogin();
+        resetInactivityTimer();
+      }
+    });
+
+    return () => {
+      window.removeEventListener('focus', checkLogin);
+      window.removeEventListener('mousemove', resetInactivityTimer);
+      window.removeEventListener('keypress', resetInactivityTimer);
+      clearTimeout(inactivityTimeout);
+    };
+  }, []);
+
+  const checkLogin = async () => {
+    try {
       const cookies = Cookies.get();
       if (!cookies.token) {
         setIsAuthenticated(false);
@@ -30,26 +67,25 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      try {
-        const res = await verifyTokenRequest();
-        if (!res.data) {
-          setIsAuthenticated(false);
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-
-        setIsAuthenticated(true);
-        setUser(res.data);
-        setLoading(false);
-      } catch (error) {
+      const res = await verifyTokenRequest();
+      if (!res.data) {
         setIsAuthenticated(false);
         setUser(null);
         setLoading(false);
+        return;
       }
+
+      setIsAuthenticated(true);
+      setUser(res.data);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setIsAuthenticated(false);
+      setUser(null);
+      setLoading(false);
+      Cookies.remove("token");
     }
-    checkLogin();
-  }, []);
+  };
 
   const signup = async (user) => {
     try {
@@ -57,7 +93,11 @@ export const AuthProvider = ({ children }) => {
       setUser(res.data);
       setIsAuthenticated(true);
     } catch (error) {
-      setErrors(error.response.data.message);
+      if (Array.isArray(error.response.data.message)) {
+        setErrors(error.response.data.message);
+      } else {
+        setErrors([error.response.data.message]);
+      }
     }
   };
 
@@ -67,7 +107,11 @@ export const AuthProvider = ({ children }) => {
       setUser(res.data);
       setIsAuthenticated(true);
     } catch (error) {
-      setErrors(error.response.data.message);
+      if (Array.isArray(error.response.data.message)) {
+        setErrors(error.response.data.message);
+      } else {
+        setErrors([error.response.data.message]);
+      }
     }
   };
 
@@ -76,6 +120,8 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     setUser(null);
   };
+
+  const clearErrors = () => setErrors([]);
 
   return (
     <AuthContext.Provider
@@ -87,6 +133,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         errors,
         loading,
+        clearErrors,
       }}
     >
       {children}

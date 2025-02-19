@@ -5,6 +5,7 @@ import {
   getTask,
   getTasks,
   updateTask,
+  toggleTaskStatus,
 } from "../controllers/tasks.controllers.js";
 import { auth } from "../middlewares/auth.middleware.js";
 import { validateSchema } from "../middlewares/validator.middleware.js";
@@ -21,5 +22,7 @@ router.get("/tasks/:id", auth, getTask);
 router.put("/tasks/:id", auth, updateTask);
 
 router.delete("/tasks/:id", auth, deleteTask);
+
+router.patch("/tasks/:id/toggle", auth, toggleTaskStatus);
 
 export default router;

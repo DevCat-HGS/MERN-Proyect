@@ -25,6 +25,7 @@ export const createTask = async (req, res) => {
       description,
       date,
       user: req.user.id,
+      completed: false  // Este es el valor por defecto
     });
     
     const savedTask = await newTask.save();
@@ -94,5 +95,31 @@ export const getTask = async (req, res) => {
     return res.json(task);
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+};
+
+export const toggleTaskStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ message: ["Task not found"] });
+    }
+
+    // Verificar que el usuario sea el dueño de la tarea
+    if (task.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: ["Not authorized"] });
+    }
+
+    task.completed = !task.completed;
+    await task.save();
+
+    return res.json(task);
+  } catch (error) {
+    console.error("Toggle task status error:", error);
+    return res.status(500).json({ 
+      message: ["Error updating task status", error.message] 
+    });
   }
 };
