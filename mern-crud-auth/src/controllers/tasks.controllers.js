@@ -2,8 +2,17 @@ import Task from "../models/task.model.js";
 
 export const getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find({ user : req.user.id }).populate("user");
-    res.json(tasks);
+    const tasks = await Task.find({ user: req.user.id }).populate("user");
+    
+    // Añadir información de vencimiento a cada tarea
+    const tasksWithStatus = tasks.map(task => {
+      const taskObj = task.toObject();
+      taskObj.isOverdue = task.date && !task.completed && 
+        new Date(task.date) < new Date().setHours(0, 0, 0, 0);
+      return taskObj;
+    });
+    
+    res.json(tasksWithStatus);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -92,7 +101,12 @@ export const getTask = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ message: "Task not found" });
-    return res.json(task);
+    
+    const taskObj = task.toObject();
+    taskObj.isOverdue = task.date && !task.completed && 
+      new Date(task.date) < new Date().setHours(0, 0, 0, 0);
+    
+    return res.json(taskObj);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

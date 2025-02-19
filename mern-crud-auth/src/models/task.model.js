@@ -25,7 +25,14 @@ const taskSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
   }
 );
+
+taskSchema.virtual('isOverdue').get(function() {
+  if (!this.date || this.completed) return false;
+  return new Date(this.date) < new Date().setHours(0, 0, 0, 0);
+});
 
 export default mongoose.model("Task", taskSchema);

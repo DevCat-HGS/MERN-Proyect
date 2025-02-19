@@ -1,6 +1,7 @@
 import { useTasks } from "../../context/tasksContext";
 import { Link } from "react-router-dom";
-import { FiEdit2, FiTrash2, FiCheck, FiX } from "react-icons/fi";
+import { FiEdit2, FiTrash2, FiCheck, FiX, FiClock } from "react-icons/fi";
+import dayjs from "dayjs";
 
 export function TaskCard({ task }) {
   const { deleteTask, toggleTaskStatus } = useTasks();
@@ -14,6 +15,29 @@ export function TaskCard({ task }) {
     }
   };
 
+  const isOverdue = task.date && !task.completed && dayjs(task.date).isBefore(dayjs(), 'day');
+
+  const getStatusBadge = () => {
+    if (task.completed) {
+      return {
+        text: "Completed",
+        className: "bg-green-500/10 text-green-500"
+      };
+    }
+    if (isOverdue) {
+      return {
+        text: "Overdue",
+        className: "bg-red-500/10 text-red-500"
+      };
+    }
+    return {
+      text: "Pending",
+      className: "bg-yellow-500/10 text-yellow-500"
+    };
+  };
+
+  const badge = getStatusBadge();
+
   return (
     <div className={`bg-gray-800 rounded-lg overflow-hidden hover:shadow-lg transition-shadow ${
       task.completed ? 'opacity-75' : ''
@@ -25,13 +49,14 @@ export function TaskCard({ task }) {
           }`}>
             {task.title}
           </h3>
-          <span className={`px-2 py-1 rounded text-xs font-medium ${
-            task.completed 
-              ? "bg-green-500/10 text-green-500" 
-              : "bg-yellow-500/10 text-yellow-500"
-          }`}>
-            {task.completed ? "Completed" : "Pending"}
-          </span>
+          <div className="flex gap-2 items-center">
+            {isOverdue && !task.completed && (
+              <FiClock className="text-red-500 w-4 h-4" />
+            )}
+            <span className={`px-2 py-1 rounded text-xs font-medium ${badge.className}`}>
+              {badge.text}
+            </span>
+          </div>
         </div>
         
         <p className={`text-gray-400 mb-6 line-clamp-2 ${
@@ -41,8 +66,8 @@ export function TaskCard({ task }) {
         </p>
         
         <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-500">
-            {new Date(task.date).toLocaleDateString()}
+          <div className={`text-sm ${isOverdue ? 'text-red-400' : 'text-gray-500'}`}>
+            {dayjs(task.date).format('DD/MM/YYYY')}
           </div>
           <div className="flex gap-2">
             <button
