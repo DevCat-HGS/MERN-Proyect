@@ -2,11 +2,25 @@
 
 This is a web application project using React, with a Nodejs Backend using Express and Mongodb as Database (MERN Stack)
 
-### Installation with docker-compose (Recommended)
+### Instalación con docker-compose (Recomendado)
 
 ```sh
-docker-compose up -d
-npm run dev
+# Construir y ejecutar todos los contenedores (MongoDB, Backend y Frontend)
+docker-compose up -d --build
+
+# Para ver los logs de los contenedores
+docker-compose logs -f
+```
+
+Esto iniciará tres contenedores:
+- **tasksdb**: Base de datos MongoDB
+- **mern-backend**: Servidor Node.js/Express (accesible en http://localhost:4000)
+- **mern-frontend**: Cliente React/Vite (accesible en http://localhost:5173)
+
+### Detener los contenedores
+
+```sh
+docker-compose down
 ```
 
 ### Deployment

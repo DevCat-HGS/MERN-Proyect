@@ -1,12 +1,42 @@
 version: '3.8'
 
 services:
+  # Base de datos MongoDB
   tasksdb:
     image: mongo
     container_name: tasksdb
     restart: always
     ports:
       - 27017:27017
+    volumes:
+      - mongo-data:/data/db
+
+  # Servidor backend (Node.js/Express)
+  backend:
+    build: .
+    container_name: mern-backend
+    restart: always
+    ports:
+      - 4000:4000
+    depends_on:
+      - tasksdb
+    environment:
+      - MONGODB_URI=mongodb://tasksdb:27017/mern-tasks
+      - FRONTEND_URL=http://localhost:5173
+      - NODE_ENV=production
+
+  # Cliente frontend (React/Vite)
+  frontend:
+    build: ./client
+    container_name: mern-frontend
+    restart: always
+    ports:
+      - 5173:5173
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:
     
   
 
